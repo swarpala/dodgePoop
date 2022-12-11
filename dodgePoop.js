@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded',ev=>{
     const canvas = document.getElementById('myCanvas');
     /** @type {CanvasRenderingContext2D} */
     const ctx = canvas.getContext('2d');
+    ctx.textAlign = 'center';//center-align
     //------------------------------------
     class Player {
         constructor(size = 25, speed = 5){
@@ -14,7 +15,6 @@ document.addEventListener('DOMContentLoaded',ev=>{
             this.flashDistance = 75;
             this.flashCool = 300;
             this.isFlashEnabled = true
-            this.lookingDir = null;
             this.life = 3;
             this.invi = false;
             this.inviTime = 500;
@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded',ev=>{
                 green: 160,
                 blue: 250
             }
-            this.colorFade = 1;
         }
         
         flash() {
@@ -58,22 +57,21 @@ document.addEventListener('DOMContentLoaded',ev=>{
             if (this.invi) return;
             this.life--;
             if(!this.life){
-                alert(`Your score is ${renderScore}. Try again!`)
-                window.location.reload();
+                // alert(`Your score is ${renderScore}. Try again!`)
+                // window.location.reload();
             }
-            this.colorFade = 0;
             this.invi = true;
             setTimeout(()=>this.invi = false,this.inviTime);
         }
     }
 
     class Poop {
-        constructor(size = 15, acc = 0.1){
+        constructor(size = 15){
             this.size = size;
             this.x = parseInt(Math.random()*(canvas.width - size));
             this.y = 0;
-            this.speed = 1;
-            this.acc = acc;
+            this.speed = 1.5;
+            this.acc = parseInt(Math.random()*5+10)/100;
             this.color = '#64320A';
         }
 
@@ -89,6 +87,21 @@ document.addEventListener('DOMContentLoaded',ev=>{
         }
     }
 
+    function getRank(score) {
+        switch(true){
+            case (score<250):
+                return ['이병','진누라도 당하셨나요?'];
+            case (score<500):
+                return ['일병','아직도 짬찌!'];
+            case (score<750):
+                return ['상병','좀 치는군요?'];
+            case (score<1000):
+                return ['병장','용사중에 당신만한 사람은 없을거에요.'];
+            default:
+                return ['간부','『전문하사』에 도전할만한 수준。'];
+        }
+    };
+
     let player = new Player();
     let score = 0, renderScore = 0;
     let poopArray = [new Poop],idxOfFallenPoop = [];
@@ -98,10 +111,10 @@ document.addEventListener('DOMContentLoaded',ev=>{
     function draw(){
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.closePath();
-        drawPlayer();
-        drawPoop();
         addScore();
         drawScore();
+        drawPlayer();
+        drawPoop();
         drawLife();
         if(player.invi){
             player.color = `rgb(${player.damagedColor.red}, ${player.damagedColor.green}, ${player.damagedColor.blue})`
@@ -110,7 +123,12 @@ document.addEventListener('DOMContentLoaded',ev=>{
         } else {
             player.color = `rgb(${player.idleColor.red}, ${player.idleColor.green}, ${player.idleColor.blue})`
         }
-        animateId = requestAnimationFrame(draw);
+        if(player.life) animateId = requestAnimationFrame(draw);
+        else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.closePath();
+            drawGameOver();
+        }
     }
 
     function drawPlayer(){
@@ -121,27 +139,27 @@ document.addEventListener('DOMContentLoaded',ev=>{
 
         if(rightPressed && isInOfCanvas('width', player.x, player.size, player.speed))
             player.x += player.speed;
-            player.lookingDir = 'right';
         if(leftPressed && isInOfCanvas('width', player.x, player.size, player.speed*(-1)))
             player.x -= player.speed;
-            player.lookingDir = 'left';
     }
 
     function drawScore(){
-        ctx.font = '16px Consolas';
-        ctx.fillStyle = '#000000';
-        ctx.fillText(`score:${renderScore}`, 8, 20)
+        ctx.font = '40px Consolas';
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillText(`${renderScore}`, canvas.width/2, canvas.height/3)
     }
 
     function drawLife(){
-        ctx.font = '16px Consolas';
-        ctx.fillStyle = '#000000';
-        ctx.fillText(`life:${player.life}`, 8, 40)
+        ctx.font = '30px Consolas';
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        let txt = '';
+        for(let i=0; i<player.life; i++) txt += '●';
+        ctx.fillText(txt, canvas.width/2, (canvas.height/3)+30);
     }
 
     function addScore(){
         score++;
-        renderScore = parseInt(score/5);
+        renderScore = parseInt(score/4.5);
     }
 
     function drawPoop(){
@@ -163,6 +181,28 @@ document.addEventListener('DOMContentLoaded',ev=>{
             }
         }
         addPoop();
+    }
+
+    function drawGameOver(){
+        let playerRank = getRank(renderScore);
+        let fontSize = 16, offset = 10;
+        ctx.font = fontSize+'px Consolas';
+        ctx.fillStyle = 'rgba(0,0,0,1)';
+        ctx.fillText(
+            '당신의 점수는 '+renderScore+'점 입니다.'
+            ,canvas.width/2
+            ,canvas.height/2-(fontSize+offset)
+        )
+        ctx.fillText(
+            playerRank[0]+'급 이군요.'
+            ,canvas.width/2
+            ,canvas.height/2
+        )
+        ctx.fillText(
+            playerRank[1]
+            ,canvas.width/2
+            ,canvas.height/2+(fontSize+offset)
+        )
     }
 
     function addPoop(){
