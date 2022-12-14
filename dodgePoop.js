@@ -71,10 +71,10 @@ class Player {
     }
 
     move(){
-        if(rightPressed && isInOfCanvas('width', player.x, player.size, player.speed))
-            player.x += player.speed;
-        if(leftPressed && isInOfCanvas('width', player.x, player.size, player.speed*(-1)))
-            player.x -= player.speed;
+        if(rightPressed && isInOfCanvas('width', this.x, this.size, this.speed))
+            this.x += this.speed;
+        if(leftPressed && isInOfCanvas('width', this.x, this.size, this.speed*(-1)))
+            this.x -= this.speed;
     }
 }
 
@@ -150,6 +150,7 @@ function drawPlayer(){
     ctx.rect(player.x, player.y, player.size, player.size);
     ctx.fillStyle = player.color;
     ctx.fill();
+    player.move();
 }
 
 function drawScore(){
