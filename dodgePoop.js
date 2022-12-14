@@ -198,7 +198,7 @@ function drawGameOver(){
     ctx.font = fontSize+'px Consolas';
     ctx.fillStyle = 'rgb(0,0,0)';
     ctx.fillText(
-        '당신의 점수는 ${renderScore}점 입니다.'
+        `당신의 점수는 ${renderScore}점 입니다.`
         ,cWidth/2
         ,cHeight/2-(fontSize+offset)
     )
