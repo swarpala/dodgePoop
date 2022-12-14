@@ -11,15 +11,16 @@ canvas.offCtx.rect(0, 0, poopSize, poopSize);
 canvas.offCtx.fillStyle = poopColor;
 canvas.offCtx.fill();
 
+const cWidth = canvas.width, cHeight = canvas.height;
+
 ctx.textAlign = 'center';//center-align
 //------------------------------------
 class Player {
     constructor(size = 25, speed = 5){
         this.size = size;
-        this.x = (canvas.width-size)/2,
-        this.y = canvas.height-size
+        this.x = (cWidth-size)/2,
+        this.y = cHeight-size
         this.speed = speed;
-        this.color = 'rgb(50, 160, 250)';
         this.flashDistance = 75;
         this.flashCool = 300;
         this.isFlashEnabled = true
@@ -41,13 +42,14 @@ class Player {
             green: 160,
             blue: 250
         }
+        this.color = 'rgb(50, 160, 250)';
     }
     
     flash() {
         if(!this.isFlashEnabled) return;
         if(rightPressed && !leftPressed){
             if(!isInOfCanvas('width', this.x, this.size, this.flashDistance)){
-                this.x = canvas.width - this.speed - this.size;
+                this.x = cWidth - this.speed - this.size;
             } else {
                 this.x += this.flashDistance;
             }
@@ -64,19 +66,22 @@ class Player {
     damaged(){
         if (this.invi) return;
         this.life--;
-        if(!this.life){
-            // alert(`Your score is ${renderScore}. Try again!`)
-            // window.location.reload();
-        }
         this.invi = true;
         setTimeout(()=>this.invi = false,this.inviTime);
+    }
+
+    move(){
+        if(rightPressed && isInOfCanvas('width', player.x, player.size, player.speed))
+            player.x += player.speed;
+        if(leftPressed && isInOfCanvas('width', player.x, player.size, player.speed*(-1)))
+            player.x -= player.speed;
     }
 }
 
 class Poop {
     constructor(size = poopSize){
         this.size = size;
-        this.x = parseInt(Math.random()*(canvas.width - size));
+        this.x = parseInt(Math.random()*(cWidth - size));
         this.y = 0;
         this.speed = 1.5;
         this.acc = parseInt(Math.random()*5+10)/100;
@@ -112,12 +117,12 @@ function getRank(score) {
 
 let player = new Player();
 let score = 0, renderScore = 0;
-let poopArray = [new Poop],idxOfFallenPoop = [];
+let poopArray = [new Poop()],idxOfFallenPoop = [];
 let rightPressed = false, leftPressed = false;
 let animateId;
 
 function draw(){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, cWidth, cHeight);
     ctx.closePath();
     drawLife();
     addScore();
@@ -132,11 +137,11 @@ function draw(){
         player.color = `rgb(${player.idleColor.red}, ${player.idleColor.green}, ${player.idleColor.blue})`
     }
     if(!player.life) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, cWidth, cHeight);
         ctx.closePath();
         drawGameOver();
     } else {
-        animateId = requestAnimationFrame(draw);
+        requestAnimationFrame(draw);
     }
 }
 
@@ -145,17 +150,12 @@ function drawPlayer(){
     ctx.rect(player.x, player.y, player.size, player.size);
     ctx.fillStyle = player.color;
     ctx.fill();
-
-    if(rightPressed && isInOfCanvas('width', player.x, player.size, player.speed))
-        player.x += player.speed;
-    if(leftPressed && isInOfCanvas('width', player.x, player.size, player.speed*(-1)))
-        player.x -= player.speed;
 }
 
 function drawScore(){
     ctx.font = '40px Consolas';
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.fillText(`${renderScore}`, canvas.width/2, canvas.height/3)
+    ctx.fillText(`${renderScore}`, cWidth/2, cHeight/3)
 }
 
 function drawLife(){
@@ -163,7 +163,7 @@ function drawLife(){
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     let txt = '';
     for(let i=0; i<player.life; i++) txt += '●';
-    ctx.fillText(txt, canvas.width/2, (canvas.height/3)+30);
+    ctx.fillText(txt, cWidth/2, (cHeight/3)+30);
 }
 
 function addScore(){
@@ -198,25 +198,25 @@ function drawGameOver(){
     ctx.font = fontSize+'px Consolas';
     ctx.fillStyle = 'rgb(0,0,0)';
     ctx.fillText(
-        '당신의 점수는 '+renderScore+'점 입니다.'
-        ,canvas.width/2
-        ,canvas.height/2-(fontSize+offset)
+        '당신의 점수는 ${renderScore}점 입니다.'
+        ,cWidth/2
+        ,cHeight/2-(fontSize+offset)
     )
     ctx.fillText(
         '등급: '+playerRank[0]
-        ,canvas.width/2
-        ,canvas.height/2
+        ,cWidth/2
+        ,cHeight/2
     )
     ctx.fillText(
         playerRank[1]
-        ,canvas.width/2
-        ,canvas.height/2+(fontSize+offset)
+        ,cWidth/2
+        ,cHeight/2+(fontSize+offset)
     )
 }
 
 function addPoop(){
     while (poopArray.length < score/100){
-        poopArray.push(new Poop);
+        poopArray.push(new Poop());
     }
 }
 
@@ -234,8 +234,8 @@ document.addEventListener('keyup',ev=>{
 function isInOfCanvas(direction, pos, objSize, operand, offset = 0) {
     // debugger;
     let threshold;
-    if(direction === 'width') threshold = canvas.width;
-    else if(direction === 'height') threshold = canvas.height
+    if(direction === 'width') threshold = cWidth;
+    else if(direction === 'height') threshold = cHeight
     else throw "argument direction must be 'width' or 'height'.";
     return (
         pos + operand < threshold-objSize+offset &&
