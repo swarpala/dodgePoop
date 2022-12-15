@@ -3,13 +3,9 @@ const canvas = document.getElementById('myCanvas');
 const ctx = canvas.getContext('2d');
 canvas.offCanvas = document.createElement('canvas');
 canvas.offCtx = canvas.offCanvas.getContext('2d');
-let poopSize = 15, poopColor = '#64320A';
-canvas.offCanvas.width = poopSize;
-canvas.offCanvas.height = poopSize;
-canvas.offCtx.beginPath();
-canvas.offCtx.rect(0, 0, poopSize, poopSize);
-canvas.offCtx.fillStyle = poopColor;
-canvas.offCtx.fill();
+// let poopSize = 15, poopColor = '#64320A';
+
+const poopImg = new Image();
 
 const cWidth = canvas.width, cHeight = canvas.height;
 
@@ -25,8 +21,8 @@ class Player {
         this.flashCool = 300;
         this.isFlashEnabled = true
         this.life = 3;
-        this.invi = false;
-        this.inviTime = 500;
+        this.isInvisible = false;
+        this.invisibleTime = 500;
         this.damagedColor = {
             red: 255,
             green: 0,
@@ -42,7 +38,7 @@ class Player {
             green: 160,
             blue: 250
         }
-        this.color = 'rgb(50, 160, 250)';
+        this.color = this.idleColor;
     }
     
     flash() {
@@ -64,10 +60,10 @@ class Player {
     }
 
     damaged(){
-        if (this.invi) return;
+        if (this.isInvisible) return;
         this.life--;
-        this.invi = true;
-        setTimeout(()=>this.invi = false,this.inviTime);
+        this.isInvisible = true;
+        setTimeout(()=>this.isInvisible = false,this.invisibleTime);
     }
 
     move(){
@@ -79,20 +75,18 @@ class Player {
 }
 
 class Poop {
-    constructor(size = poopSize){
-        this.size = size;
-        this.x = parseInt(Math.random()*(cWidth - size));
+    constructor(){
+        this.x = parseInt(Math.random()*(cWidth - poopImg.width));
         this.y = 0;
         this.speed = 1.5;
         this.acc = parseInt(Math.random()*5+10)/100;
-        this.color = poopColor;
     }
 
     iscollided(player){
         if(
-            ((player.x >= this.x && player.x <= this.x+this.size) ||
-            (player.x+player.size >= this.x && player.x+player.size <= this.x+this.size)) &&
-            (player.y <= this.y+this.size)
+            ((player.x >= this.x && player.x <= this.x+poopImg.width) ||
+            (player.x+player.size >= this.x && player.x+player.size <= this.x+poopImg.width)) &&
+            (player.y <= this.y+poopImg.width)
         ){
             return true;
         }
@@ -129,7 +123,7 @@ function draw(){
     drawScore();
     drawPlayer();
     drawPoop();
-    if(player.invi){
+    if(player.isInvisible){
         player.color = `rgb(${player.damagedColor.red}, ${player.damagedColor.green}, ${player.damagedColor.blue})`
     } else if(!player.isFlashEnabled){
         player.color = `rgb(${player.flashedColor.red}, ${player.flashedColor.green}, ${player.flashedColor.blue}`
@@ -140,9 +134,8 @@ function draw(){
         ctx.clearRect(0, 0, cWidth, cHeight);
         ctx.closePath();
         drawGameOver();
-    } else {
+    } else 
         requestAnimationFrame(draw);
-    }
 }
 
 function drawPlayer(){
@@ -176,13 +169,10 @@ function drawPoop(){
     let poop;
     for(let i=0; i<poopArray.length; i++){
         poop = poopArray[i];
-        // ctx.beginPath();
         ctx.drawImage(canvas.offCanvas, poop.x, poop.y);
-        // ctx.fillStyle = poop.color;
-        // ctx.fill();
         poop.speed += poop.acc;
         poop.y += poop.speed;
-        if(!isInOfCanvas('height', poop.y, poop.size, poop.speed, poop.size)){
+        if(!isInOfCanvas('height', poop.y, poopImg.height, poop.speed, poopImg.height)){
             poopArray.splice(i,1);
         }
         if(poop.iscollided(player)){
@@ -244,4 +234,11 @@ function isInOfCanvas(direction, pos, objSize, operand, offset = 0) {
     )
 }
 
-draw();
+poopImg.src = 'resource/poop.png';
+
+poopImg.addEventListener('load', () => {
+    canvas.offCanvas.width = 30;
+    canvas.offCanvas.height = 15;
+    canvas.offCtx.drawImage(poopImg, 0, 0);
+    draw();
+});
