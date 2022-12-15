@@ -12,7 +12,7 @@ const cWidth = canvas.width, cHeight = canvas.height;
 ctx.textAlign = 'center';//center-align
 //------------------------------------
 class Player {
-    constructor(size = 25, speed = 5){
+    constructor(size = 20, speed = 5){
         this.size = size;
         this.x = (cWidth-size)/2,
         this.y = cHeight-size
@@ -149,7 +149,7 @@ function drawPlayer(){
 function drawScore(){
     ctx.font = '40px Consolas';
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.fillText(`${renderScore}`, cWidth/2, cHeight/3)
+    ctx.fillText(`${renderScore}`, cWidth/2, cHeight/8)
 }
 
 function drawLife(){
@@ -157,7 +157,7 @@ function drawLife(){
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     let txt = '';
     for(let i=0; i<player.life; i++) txt += '●';
-    ctx.fillText(txt, cWidth/2, (cHeight/3)+30);
+    ctx.fillText(txt, cWidth/2, (cHeight/8)+30);
 }
 
 function addScore(){
@@ -203,6 +203,15 @@ function drawGameOver(){
         ,cWidth/2
         ,cHeight/2+(fontSize+offset)
     )
+    document.addEventListener('keydown',ev=>{
+        if(ev.code === 'Enter') window.location.reload();
+    })
+    ctx.font = fontSize/1.5+'px Consolas';
+    ctx.fillText(
+        'Enter로 재시작'
+        ,cWidth/2
+        ,cHeight/2+(fontSize+offset*5)
+    )
 }
 
 function addPoop(){
@@ -214,7 +223,7 @@ function addPoop(){
 document.addEventListener('keydown',ev=>{
     if(ev.code === 'ArrowRight') rightPressed = true; 
     else if(ev.code === 'ArrowLeft') leftPressed = true;
-    else if(ev.code === 'KeyD') player.flash();
+    else if(ev.code === 'Space') player.flash();
 })
 
 document.addEventListener('keyup',ev=>{
@@ -237,8 +246,8 @@ function isInOfCanvas(direction, pos, objSize, operand, offset = 0) {
 poopImg.src = 'resource/poop.png';
 
 poopImg.addEventListener('load', () => {
-    canvas.offCanvas.width = 30;
-    canvas.offCanvas.height = 15;
+    canvas.offCanvas.width = poopImg.width;
+    canvas.offCanvas.height = poopImg.height;
     canvas.offCtx.drawImage(poopImg, 0, 0);
     draw();
 });
