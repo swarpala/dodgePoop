@@ -1,99 +1,18 @@
+import Player from "./player.js";
+import Poop from "./fallingObj.js";
+
 const canvas = document.getElementById('myCanvas');
 /** @type {CanvasRenderingContext2D} */
 const ctx = canvas.getContext('2d');
 canvas.offCanvas = document.createElement('canvas');
 canvas.offCtx = canvas.offCanvas.getContext('2d');
-// let poopSize = 15, poopColor = '#64320A';
 
 const poopImg = new Image();
 
 const cWidth = canvas.width, cHeight = canvas.height;
 
-ctx.textAlign = 'center';//center-align
+ctx.textAlign = 'center';
 //------------------------------------
-class Player {
-    constructor(size = 20, speed = 5){
-        this.size = size;
-        this.x = (cWidth-size)/2,
-        this.y = cHeight-size
-        this.speed = speed;
-        this.flashDistance = 75;
-        this.flashCool = 300;
-        this.isFlashEnabled = true
-        this.life = 3;
-        this.isInvisible = false;
-        this.invisibleTime = 500;
-        this.damagedColor = {
-            red: 255,
-            green: 0,
-            blue: 0
-        }
-        this.flashedColor = {
-            red: 150,
-            green: 150,
-            blue: 150
-        }
-        this.idleColor = {
-            red: 50,
-            green: 160,
-            blue: 250
-        }
-        this.color = this.idleColor;
-    }
-    
-    flash() {
-        if(!this.isFlashEnabled) return;
-        if(rightPressed && !leftPressed){
-            if(!isInOfCanvas('width', this.x, this.size, this.flashDistance)){
-                this.x = cWidth - this.speed - this.size;
-            } else {
-                this.x += this.flashDistance;
-            }
-        } else if(leftPressed && !rightPressed)
-            if(!isInOfCanvas('width', this.x, this.size, this.flashDistance*(-1))){
-                this.x = this.speed;
-            } else {
-                this.x -= this.flashDistance;
-            }
-        this.isFlashEnabled = false;
-        setTimeout(()=>this.isFlashEnabled = true,this.flashCool);
-    }
-
-    damaged(){
-        if (this.isInvisible) return;
-        this.life--;
-        this.isInvisible = true;
-        setTimeout(()=>this.isInvisible = false,this.invisibleTime);
-    }
-
-    move(){
-        if(rightPressed && isInOfCanvas('width', this.x, this.size, this.speed))
-            this.x += this.speed;
-        if(leftPressed && isInOfCanvas('width', this.x, this.size, this.speed*(-1)))
-            this.x -= this.speed;
-    }
-}
-
-class Poop {
-    constructor(){
-        this.x = parseInt(Math.random()*(cWidth - poopImg.width));
-        this.y = 0;
-        this.speed = 1.5;
-        this.acc = parseInt(Math.random()*5+10)/100;
-    }
-
-    iscollided(player){
-        if(
-            ((player.x >= this.x && player.x <= this.x+poopImg.width) ||
-            (player.x+player.size >= this.x && player.x+player.size <= this.x+poopImg.width)) &&
-            (player.y <= this.y+poopImg.width)
-        ){
-            return true;
-        }
-        return false;
-    }
-}
-
 function getRank(score) {
     switch(true){
         case (score<250):
@@ -111,9 +30,8 @@ function getRank(score) {
 
 let player = new Player();
 let score = 0, renderScore = 0;
-let poopArray = [new Poop()],idxOfFallenPoop = [];
+let poopArray = [new Poop()];
 let rightPressed = false, leftPressed = false;
-let animateId;
 
 function draw(){
     ctx.clearRect(0, 0, cWidth, cHeight);
@@ -216,7 +134,7 @@ function drawGameOver(){
 
 function addPoop(){
     while (poopArray.length < score/100){
-        poopArray.push(new Poop());
+        poopArray.push(new Poop(poopImg.width));
     }
 }
 
@@ -232,7 +150,6 @@ document.addEventListener('keyup',ev=>{
 })
 
 function isInOfCanvas(direction, pos, objSize, operand, offset = 0) {
-    // debugger;
     let threshold;
     if(direction === 'width') threshold = cWidth;
     else if(direction === 'height') threshold = cHeight
@@ -243,7 +160,7 @@ function isInOfCanvas(direction, pos, objSize, operand, offset = 0) {
     )
 }
 
-poopImg.src = 'resource/poop.png';
+poopImg.src = './resource/poop.png';
 
 poopImg.addEventListener('load', () => {
     canvas.offCanvas.width = poopImg.width;
@@ -251,3 +168,5 @@ poopImg.addEventListener('load', () => {
     canvas.offCtx.drawImage(poopImg, 0, 0);
     draw();
 });
+
+export {cWidth, cHeight, rightPressed, leftPressed, isInOfCanvas};
